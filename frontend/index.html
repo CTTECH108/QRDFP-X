@@ -5,20 +5,15 @@
 </head>
 <body>
 
-<div class="hud">
-  <h1>QRDFP-X Secure Channel</h1>
+<div class="chat-container">
+  <div class="header">QRDFP-X Secure Chat</div>
 
-  <!-- MESSAGE ENCRYPTION -->
-  <input id="msg" placeholder="Enter secure message">
-  <button onclick="sendMsg()">Encrypt Message</button>
-  <pre id="msgOut"></pre>
+  <div id="chat" class="chat-box"></div>
 
-  <hr>
-
-  <!-- FILE UPLOAD -->
-  <input type="file" id="file">
-  <button onclick="uploadFile()">Upload Encrypted File</button>
-  <pre id="fileOut"></pre>
+  <div class="input-bar">
+    <input id="msg" placeholder="Type a message">
+    <button onclick="sendMsg()">➤</button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
