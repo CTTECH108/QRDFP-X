@@ -1,7 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os, time
 from crypto import encrypt_bytes, decrypt_bytes
 from replay import validate_request
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
 
 app = Flask(__name__)
 
@@ -9,30 +12,39 @@ app = Flask(__name__)
 qrng_buffer = []
 
 # ---------------- STORAGE DIRECTORIES ----------------
-UPLOAD_DIR = "uploads"
-DECRYPT_DIR = "decrypted"
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+DECRYPT_DIR = os.path.join(BASE_DIR, "decrypted")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(DECRYPT_DIR, exist_ok=True)
 
-# ---------------- ROOT (FOR BROWSER) ----------------
-@app.route("/", methods=["GET"])
-def index():
-    return jsonify({
-        "status": "QRDFP-X backend running",
-        "endpoints": [
-            "/qrng (POST)",
-            "/message (POST)",
-            "/upload_chunk (POST)",
-            "/decrypt_file (POST)"
-        ]
-    })
+# ====================================================
+# FRONTEND SERVING (SINGLE WEB SERVICE)
+# ====================================================
 
-# ---------------- HEALTH CHECK ----------------
-@app.route("/health", methods=["GET"])
+@app.route("/", methods=["GET"])
+def serve_index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+@app.route("/style.css")
+def serve_css():
+    return send_from_directory(FRONTEND_DIR, "style.css")
+
+@app.route("/app.js")
+def serve_js():
+    return send_from_directory(FRONTEND_DIR, "app.js")
+
+# ====================================================
+# HEALTH CHECK
+# ====================================================
+
+@app.route("/health")
 def health():
     return "OK", 200
 
-# ---------------- QRNG INGEST ----------------
+# ====================================================
+# QRNG INGEST (ESP8266)
+# ====================================================
+
 @app.route("/qrng", methods=["POST"])
 def qrng():
     data = request.get_json(force=True)
@@ -43,9 +55,12 @@ def qrng():
 
     return "OK", 200
 
-# ---------------- MESSAGE ENCRYPTION ----------------
+# ====================================================
+# MESSAGE ENCRYPTION / DECRYPTION
+# ====================================================
+
 @app.route("/message", methods=["POST"])
-def message():
+def message_encrypt():
     data = request.get_json(force=True)
 
     if not validate_request(data["nonce"], data["timestamp"]):
@@ -56,7 +71,6 @@ def message():
 
     return jsonify({"cipher": list(cipher)})
 
-# ---------------- MESSAGE DECRYPTION ----------------
 @app.route("/message/decrypt", methods=["POST"])
 def message_decrypt():
     data = request.get_json(force=True)
@@ -65,7 +79,10 @@ def message_decrypt():
     plain = decrypt_bytes(cipher, qrng_buffer)
     return jsonify({"msg": plain.decode(errors="ignore")})
 
-# ---------------- CHUNKED FILE UPLOAD ----------------
+# ====================================================
+# CHUNKED FILE UPLOAD (ENCRYPTED)
+# ====================================================
+
 @app.route("/upload_chunk", methods=["POST"])
 def upload_chunk():
     nonce = request.form["nonce"]
@@ -86,7 +103,10 @@ def upload_chunk():
 
     return f"Chunk {chunk_id} stored", 200
 
-# ---------------- FILE DECRYPT ----------------
+# ====================================================
+# FILE DECRYPT
+# ====================================================
+
 @app.route("/decrypt_file", methods=["POST"])
 def decrypt_file():
     data = request.get_json(force=True)
@@ -106,7 +126,10 @@ def decrypt_file():
 
     return "File decrypted", 200
 
-# ---------------- ENTRY POINT ----------------
+# ====================================================
+# ENTRY POINT (RENDER + LOCAL)
+# ====================================================
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
