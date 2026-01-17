@@ -4,8 +4,11 @@ from crypto import encrypt_bytes, decrypt_bytes
 from replay import validate_request
 
 app = Flask(__name__)
+
+# ---------------- GLOBAL QRNG BUFFER ----------------
 qrng_buffer = []
 
+# ---------------- STORAGE DIRECTORIES ----------------
 UPLOAD_DIR = "uploads"
 DECRYPT_DIR = "decrypted"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -14,27 +17,40 @@ os.makedirs(DECRYPT_DIR, exist_ok=True)
 # ---------------- QRNG INGEST ----------------
 @app.route("/qrng", methods=["POST"])
 def qrng():
-    qrng_buffer.append(request.json["qrng"])
+    data = request.get_json(force=True)
+    qrng_buffer.append(data["qrng"])
+
+    # Limit buffer size
     if len(qrng_buffer) > 128:
         qrng_buffer.pop(0)
-    return "OK"
+
+    return "OK", 200
 
 # ---------------- MESSAGE ENCRYPTION ----------------
 @app.route("/message", methods=["POST"])
 def message():
-    data = request.json
+    data = request.get_json(force=True)
+
     if not validate_request(data["nonce"], data["timestamp"]):
         return "Replay blocked", 403
 
     plain = data["msg"].encode()
     cipher = encrypt_bytes(plain, qrng_buffer)
-    return jsonify({"cipher": list(cipher)})
 
+    return jsonify({
+        "cipher": list(cipher)
+    })
+
+# ---------------- MESSAGE DECRYPTION ----------------
 @app.route("/message/decrypt", methods=["POST"])
 def message_decrypt():
-    cipher = bytes(request.json["cipher"])
+    data = request.get_json(force=True)
+    cipher = bytes(data["cipher"])
+
     plain = decrypt_bytes(cipher, qrng_buffer)
-    return jsonify({"msg": plain.decode()})
+    return jsonify({
+        "msg": plain.decode(errors="ignore")
+    })
 
 # ---------------- CHUNKED FILE UPLOAD ----------------
 @app.route("/upload_chunk", methods=["POST"])
@@ -47,28 +63,37 @@ def upload_chunk():
 
     file_id = request.form["file_id"]
     chunk_id = int(request.form["chunk_id"])
-    data = request.files["chunk"].read()
+    chunk_data = request.files["chunk"].read()
 
-    enc = encrypt_bytes(data, qrng_buffer)
+    encrypted_chunk = encrypt_bytes(chunk_data, qrng_buffer)
 
     path = os.path.join(UPLOAD_DIR, f"{file_id}.enc")
     with open(path, "ab") as f:
-        f.write(enc)
+        f.write(encrypted_chunk)
 
-    return f"Chunk {chunk_id} stored"
+    return f"Chunk {chunk_id} stored", 200
 
 # ---------------- FILE DECRYPT ----------------
 @app.route("/decrypt_file", methods=["POST"])
 def decrypt_file():
-    fname = request.json["filename"]
-    with open(os.path.join(UPLOAD_DIR, fname), "rb") as f:
-        enc = f.read()
+    data = request.get_json(force=True)
+    filename = data["filename"]
 
-    dec = decrypt_bytes(enc, qrng_buffer)
-    out = fname.replace(".enc", "")
-    with open(os.path.join(DECRYPT_DIR, out), "wb") as f:
-        f.write(dec)
+    enc_path = os.path.join(UPLOAD_DIR, filename)
+    with open(enc_path, "rb") as f:
+        encrypted_data = f.read()
 
-    return "File decrypted"
+    decrypted_data = decrypt_bytes(encrypted_data, qrng_buffer)
 
-app.run(debug=True)
+    output_name = filename.replace(".enc", "")
+    out_path = os.path.join(DECRYPT_DIR, output_name)
+
+    with open(out_path, "wb") as f:
+        f.write(decrypted_data)
+
+    return "File decrypted", 200
+
+# ---------------- RENDER / LOCAL ENTRY POINT ----------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
