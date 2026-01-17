@@ -14,13 +14,30 @@ DECRYPT_DIR = "decrypted"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(DECRYPT_DIR, exist_ok=True)
 
+# ---------------- ROOT (FOR BROWSER) ----------------
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify({
+        "status": "QRDFP-X backend running",
+        "endpoints": [
+            "/qrng (POST)",
+            "/message (POST)",
+            "/upload_chunk (POST)",
+            "/decrypt_file (POST)"
+        ]
+    })
+
+# ---------------- HEALTH CHECK ----------------
+@app.route("/health", methods=["GET"])
+def health():
+    return "OK", 200
+
 # ---------------- QRNG INGEST ----------------
 @app.route("/qrng", methods=["POST"])
 def qrng():
     data = request.get_json(force=True)
     qrng_buffer.append(data["qrng"])
 
-    # Limit buffer size
     if len(qrng_buffer) > 128:
         qrng_buffer.pop(0)
 
@@ -37,9 +54,7 @@ def message():
     plain = data["msg"].encode()
     cipher = encrypt_bytes(plain, qrng_buffer)
 
-    return jsonify({
-        "cipher": list(cipher)
-    })
+    return jsonify({"cipher": list(cipher)})
 
 # ---------------- MESSAGE DECRYPTION ----------------
 @app.route("/message/decrypt", methods=["POST"])
@@ -48,9 +63,7 @@ def message_decrypt():
     cipher = bytes(data["cipher"])
 
     plain = decrypt_bytes(cipher, qrng_buffer)
-    return jsonify({
-        "msg": plain.decode(errors="ignore")
-    })
+    return jsonify({"msg": plain.decode(errors="ignore")})
 
 # ---------------- CHUNKED FILE UPLOAD ----------------
 @app.route("/upload_chunk", methods=["POST"])
@@ -93,7 +106,7 @@ def decrypt_file():
 
     return "File decrypted", 200
 
-# ---------------- RENDER / LOCAL ENTRY POINT ----------------
+# ---------------- ENTRY POINT ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
