@@ -4,11 +4,21 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    // 🔒 Force production JSX runtime (NO _jsxDEV)
+    react({
+      development: false,
+    }),
+
+    // Enable component tagger ONLY in dev
+    mode === "development" && componentTagger(),
+  ].filter(Boolean),
+
   server: {
-    host: "::", // allow IPv4 + IPv6
+    host: "::", // IPv4 + IPv6
     port: 8080,
     allowedHosts: [
-      "qrdfp-x.onrender.com" // ✅ FIX for your error
+      "qrdfp-x.onrender.com",
     ],
     hmr: {
       overlay: false,
@@ -16,18 +26,17 @@ export default defineConfig(({ mode }) => ({
   },
 
   preview: {
-    host: true,   // ✅ REQUIRED for Render
+    host: true, // REQUIRED for Render
     port: 4173,
   },
-
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-  ].filter(Boolean),
 
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+
+  build: {
+    sourcemap: false, // production safe
   },
 }));
