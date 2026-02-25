@@ -301,7 +301,7 @@ export default function ChatApp({ user }: ChatAppProps) {
                             <span className={`font-mono-cyber text-[8px] ${
                               msg.entropy_source === "hardware" ? "text-cyber-green" : "text-cyber-amber"
                             }`}>
-                              [{msg.entropy_source === "hardware" ? "HW-QRNG" : "SW-RNG"}]
+                              [{msg.entropy_source === "hardware" ? "HW-QRNG" : "QRNG"}]
                             </span>
                           </div>
                           <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-sm text-sm font-mono-cyber ${
