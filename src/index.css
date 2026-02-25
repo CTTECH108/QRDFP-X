@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── QRNG Secure Comms — Cyberpunk Design System ── */
+
+@layer base {
+  :root {
+    /* === Core palette (dark-first) === */
+    --background: 220 20% 4%;
+    --foreground: 180 100% 85%;
+
+    --card: 220 18% 7%;
+    --card-foreground: 180 80% 80%;
+
+    --popover: 220 18% 7%;
+    --popover-foreground: 180 80% 80%;
+
+    /* Cyan/teal primary */
+    --primary: 180 100% 50%;
+    --primary-foreground: 220 20% 4%;
+
+    --secondary: 220 16% 12%;
+    --secondary-foreground: 180 60% 70%;
+
+    --muted: 220 14% 10%;
+    --muted-foreground: 220 20% 45%;
+
+    --accent: 162 100% 40%;
+    --accent-foreground: 220 20% 4%;
+
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 180 30% 18%;
+    --input: 220 16% 10%;
+    --ring: 180 100% 50%;
+
+    --radius: 0.25rem;
+
+    /* Cyberpunk custom tokens */
+    --cyber-cyan: 180 100% 50%;
+    --cyber-green: 140 100% 45%;
+    --cyber-amber: 40 100% 55%;
+    --cyber-red: 0 90% 60%;
+    --cyber-purple: 270 80% 60%;
+    --cyber-dark: 220 20% 4%;
+    --cyber-darker: 220 22% 2%;
+    --cyber-surface: 220 18% 7%;
+    --cyber-surface-2: 220 16% 10%;
+    --cyber-surface-3: 220 14% 14%;
+
+    /* Glow shadows */
+    --glow-cyan: 0 0 20px hsl(180 100% 50% / 0.5), 0 0 60px hsl(180 100% 50% / 0.2);
+    --glow-green: 0 0 20px hsl(140 100% 45% / 0.5), 0 0 60px hsl(140 100% 45% / 0.2);
+    --glow-amber: 0 0 20px hsl(40 100% 55% / 0.5), 0 0 60px hsl(40 100% 55% / 0.2);
+    --glow-red: 0 0 20px hsl(0 90% 60% / 0.5);
+
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(220 20% 4%), hsl(220 18% 7%) 50%, hsl(220 22% 5%));
+    --gradient-primary: linear-gradient(135deg, hsl(180 100% 40%), hsl(162 100% 35%));
+    --gradient-scan: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(180 100% 50% / 0.02) 2px,
+      hsl(180 100% 50% / 0.02) 4px
+    );
+
+    --sidebar-background: 220 20% 4%;
+    --sidebar-foreground: 180 60% 70%;
+    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 16% 12%;
+    --sidebar-accent-foreground: 180 60% 70%;
+    --sidebar-border: 180 30% 18%;
+    --sidebar-ring: 180 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    background-image: var(--gradient-scan);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Orbitron', monospace;
+  }
+
+  code, pre, .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: hsl(var(--cyber-darker)); }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--cyber-cyan) / 0.4); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--cyber-cyan) / 0.7); }
+}
+
+/* Cyber utility classes */
+@layer utilities {
+  .cyber-border {
+    border: 1px solid hsl(var(--cyber-cyan) / 0.3);
+  }
+  .cyber-border-glow {
+    border: 1px solid hsl(var(--cyber-cyan) / 0.6);
+    box-shadow: var(--glow-cyan);
+  }
+  .cyber-bg {
+    background: hsl(var(--cyber-surface));
+    background-image: var(--gradient-scan);
+  }
+  .text-cyber {
+    color: hsl(var(--cyber-cyan));
+    text-shadow: 0 0 10px hsl(var(--cyber-cyan) / 0.5);
+  }
+  .text-cyber-green {
+    color: hsl(var(--cyber-green));
+    text-shadow: 0 0 10px hsl(var(--cyber-green) / 0.5);
+  }
+  .text-cyber-amber {
+    color: hsl(var(--cyber-amber));
+    text-shadow: 0 0 10px hsl(var(--cyber-amber) / 0.5);
+  }
+  .text-cyber-red {
+    color: hsl(var(--cyber-red));
+    text-shadow: 0 0 10px hsl(var(--cyber-red) / 0.5);
+  }
+  .font-cyber {
+    font-family: 'Orbitron', monospace;
+  }
+  .font-mono-cyber {
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .glow-cyan { box-shadow: var(--glow-cyan); }
+  .glow-green { box-shadow: var(--glow-green); }
+  .glow-amber { box-shadow: var(--glow-amber); }
+
+  /* Scanline overlay */
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-scan);
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Grid pattern background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(180 100% 50% / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(180 100% 50% / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Glitch animation */
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, 2px); }
+    80% { transform: translate(1px, -2px); }
+  }
+  .glitch { animation: glitch 0.3s ease-in-out; }
+
+  @keyframes pulse-cyber {
+    0%, 100% { opacity: 1; box-shadow: var(--glow-cyan); }
+    50% { opacity: 0.7; box-shadow: none; }
+  }
+  .pulse-cyber { animation: pulse-cyber 2s ease-in-out infinite; }
+
+  @keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .blink { animation: blink-cursor 1s step-end infinite; }
+
+  @keyframes scan-line {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  .scan-anim { animation: scan-line 4s linear infinite; }
+
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.4; }
+  }
+  .flicker { animation: flicker 3s infinite; }
+
+  @keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  @keyframes data-stream {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
+  }
+}
+
