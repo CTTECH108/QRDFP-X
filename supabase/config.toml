@@ -1,4 +1,0 @@
-project_id = "xzkiemenuyrddgprjfxe"
-
-[functions.entropy]
-verify_jwt = false
